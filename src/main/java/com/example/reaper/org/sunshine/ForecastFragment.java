@@ -1,12 +1,14 @@
 package com.example.reaper.org.sunshine;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -35,7 +37,25 @@ import java.util.List;
          public void onCreate(Bundle savedInstance) {
             super.onCreate(savedInstance);
              //For fragment to handle menu options
+            setHasOptionsMenu(true);
          }
+
+         @Override
+         public void onCreateOptionsMenu(Menu menu, MenuInflater menuinflator){
+            menuinflator.inflate(R.menu.forecastfragment, menu);
+         }
+
+         @Override
+         public boolean onOptionsItemSelected(MenuItem menuitem){
+            int id= menuitem.getItemId();
+             if(id == R.id.action_refresh) {
+                 FetchWeatherTask ftw = new FetchWeatherTask();
+                 ftw.execute();
+                 return true;
+             }
+             return super.onOptionsItemSelected(menuitem);
+         }
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,10 +82,10 @@ import java.util.List;
             return rootView;
          }
 
-         public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
+         public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
              @Override
-             protected Void doInBackground(Void... voids) {
+             protected Void doInBackground(String... q) {
                  // These two need to be declared outside the try/catch
                  // so that they can be closed in the finally block.
                  HttpURLConnection urlConnection = null;
@@ -78,6 +98,17 @@ import java.util.List;
                      // Construct the URL for the OpenWeatherMap query
                      // Possible parameters are available at OWM's forecast API page, at
                      // http://openweathermap.org/API#forecast
+
+                     Uri.Builder uribuilder = new Uri.Builder();
+                     uribuilder.scheme("http");
+                     uribuilder.authority("api.openweathermap.org");
+                     uribuilder.appendPath("data").appendPath("2.5").appendPath("forecast").appendPath("daily");
+                     uribuilder.appendQueryParameter("q", "ss");
+
+                     String urlyangu = uribuilder.build().toString();
+
+                     Log.v("eeeeeeee", urlyangu);
+
                      URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
 
                      // Create the request to OpenWeatherMap, and open the connection
@@ -107,6 +138,7 @@ import java.util.List;
                          forecastJsonStr = null;
                      }
                      forecastJsonStr = buffer.toString();
+                     Log.v("sunshine.app", forecastJsonStr);
                  } catch (IOException e) {
                      Log.e("PlaceholderFragment", "Error ", e);
                      // If the code didn't successfully get the weather data, there's no point in attempting
